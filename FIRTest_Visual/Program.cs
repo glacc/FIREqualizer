@@ -754,11 +754,22 @@ namespace Glacc.FIRTest_Visual
             Utils.DrawElements(elements, appWindow.renderWindow);
         }
 
+        static void UserClose(object? sender, EventArgs e)
+        {
+            audioStream.Stop();
+
+            audioStream.mutex.WaitOne();
+            audioStream.mutex.ReleaseMutex();
+
+            audioStream.Dispose();
+        }
+
         static void Main(string[] args)
         {
             appWindow.userInit += UserInit;
             appWindow.userUpdate += UserUpdate;
             appWindow.userDraw += UserDraw;
+            appWindow.afterClosing += UserClose;
 
             appWindow.Run();
         }
