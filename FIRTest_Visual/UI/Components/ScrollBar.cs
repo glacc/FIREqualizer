@@ -30,7 +30,7 @@ namespace Glacc.UI.Components
         public float scrollerSizeScale = 0.3f;
         public int scrollerSizePixels
         {
-            set => scrollerSizeScale = value / (float)(length - width * 2);
+            set => scrollerSizeScale = value / (float)(length - (width * 2));
         }
         int scrollerZone;
         int scrollerLength;
@@ -68,7 +68,7 @@ namespace Glacc.UI.Components
 
         void UpdateDrawablePosition()
         {
-            scrollerZone = length - width * 2;
+            scrollerZone = length - (width * 2);
             scrollerLength = (int)(scrollerZone * scrollerSizeScale);
 
             bgRect.Position = new Vector2f(px, py);
@@ -115,7 +115,7 @@ namespace Glacc.UI.Components
 
                 if (mouseHoverOnBg)
                 {
-                    int scrollPosCentered = scrollerPos + scrollerLength / 2;
+                    int scrollPosCentered = scrollerPos + (scrollerLength / 2);
                     float scrollSpeedMultiplied = scrollSpeedPercent * scrollBgSpeedMultiplier;
                     if (orientation == Orientation.Horizontal)
                     {

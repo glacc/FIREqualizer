@@ -63,7 +63,7 @@ namespace Glacc
             Impulse,
             OriginalSignal,
             OutputSignal
-        };
+        }
 
         int WrapToQueue(int len, int pos, int offset)
         {
