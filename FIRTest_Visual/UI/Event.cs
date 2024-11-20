@@ -168,7 +168,7 @@ namespace Glacc.UI
         static void OnMouseScroll(object? sender, MouseWheelScrollEventArgs e)
         {
             mouseScroll = true;
-            mouseScrollVel = e.Delta;
+            mouseScrollVel += e.Delta;
         }
 
         public static void ApplyEventHandlers(Window? window)
@@ -185,16 +185,9 @@ namespace Glacc.UI
             window.MouseWheelScrolled += new EventHandler<MouseWheelScrollEventArgs>(OnMouseScroll);
         }
 
-        public static void UpdateBeforeDispatch()
+        public static void ResetPossiblyRepeatedState()
         {
-            KeyPressReleaseList.ClearPressReleaseList();
-
-            mousePress = false;
-            mouseRelease = false;
-            mouseDragRelease = false;
-
-            mouseScroll = false;
-            mouseScrollVel = 0f;
+            mouseStateStack.Clear();
 
             mouseAvailable = true;
 
@@ -205,14 +198,22 @@ namespace Glacc.UI
             textUnicode = "";
         }
 
-        public static void Update(Window? window)
+        public static void ResetState()
         {
-            if (window == null)
-                return;
+            KeyPressReleaseList.ClearPressReleaseList();
 
-            UpdateBeforeDispatch();
-            window.DispatchEvents();
+            mousePress = false;
+            mouseRelease = false;
+            mouseDragRelease = false;
 
+            mouseScroll = false;
+            mouseScrollVel = 0f;
+
+            ResetPossiblyRepeatedState();
+        }
+
+        public static void UpdateState()
+        {
             mouseXvel = mouseX - mouseXold;
             mouseYvel = mouseY - mouseYold;
 
@@ -235,6 +236,20 @@ namespace Glacc.UI
 
             mouseXold = mouseX;
             mouseYold = mouseY;
+        }
+
+        public static void Update(Window? window, bool resetStates = true, bool separateUpdate = false)
+        {
+            if (window == null)
+                return;
+
+            if (resetStates)
+                ResetState();
+
+            window.DispatchEvents();
+
+            if (!separateUpdate)
+                UpdateState();
         }
     }
 }

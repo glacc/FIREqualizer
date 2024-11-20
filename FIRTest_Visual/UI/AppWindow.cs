@@ -1,4 +1,5 @@
 ﻿using SFML.Graphics;
+using System.Diagnostics;
 
 namespace Glacc.UI
 {
@@ -15,6 +16,7 @@ namespace Glacc.UI
                 m_title = value;
             }
         }
+
         int m_width;
         public int width
         {
@@ -35,6 +37,20 @@ namespace Glacc.UI
                 m_height = value;
             }
         }
+
+        float m_updateTickrate = 60f;
+        float timeEachUpdate;
+        public float updateTickrate
+        {
+            get => m_updateTickrate;
+            set
+            {
+                m_updateTickrate = value;
+                timeEachUpdate = 1000f / value;
+            }
+        }
+        public int maxUpdateEachDraw = 10;
+
         public RenderWindow? renderWindow = null;
 
         public EventHandler<EventArgs>? userInit = null;
@@ -87,13 +103,44 @@ namespace Glacc.UI
 
             userInit?.Invoke(this, EventArgs.Empty);
 
+            bool resetState = true;
+
+            timeEachUpdate = 1000f / m_updateTickrate;
+            float timeAfterLastUpdate = timeEachUpdate;
+            Stopwatch stopwatch = new Stopwatch();
+
             while (renderWindow.IsOpen)
             {
-                Event.Update(renderWindow);
+                Event.Update(renderWindow, resetState, true);
+                resetState = false;
 
                 renderWindow.Clear(Settings.bgColor);
 
-                userUpdate?.Invoke(this, EventArgs.Empty);
+                stopwatch.Stop();
+                double elaspedMs = stopwatch.Elapsed.TotalMilliseconds;
+                stopwatch.Restart();
+                if (elaspedMs != double.NaN)
+                    timeAfterLastUpdate += (float)elaspedMs;
+
+                int updateCount = 0;
+                while (timeAfterLastUpdate >= timeEachUpdate)
+                {
+                    Event.ResetPossiblyRepeatedState();
+                    Event.UpdateState();
+
+                    userUpdate?.Invoke(this, EventArgs.Empty);
+
+                    resetState = true;
+
+                    timeAfterLastUpdate -= timeEachUpdate;
+
+                    updateCount++;
+                    if (updateCount >= maxUpdateEachDraw)
+                    {
+                        timeAfterLastUpdate %= timeEachUpdate;
+                        break;
+                    }
+                }
 
                 userDraw?.Invoke(this, EventArgs.Empty);
 
