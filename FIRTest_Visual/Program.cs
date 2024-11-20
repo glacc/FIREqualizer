@@ -751,7 +751,7 @@ namespace Glacc.FIRTest_Visual
 
         static void UserDraw(object? sender, EventArgs e)
         {
-            Utils.DrawElements(elements, appWindow.renderWindow);
+            Utils.DrawElements(elements, appWindow.renderTexture);
         }
 
         static void UserClose(object? sender, EventArgs e)
