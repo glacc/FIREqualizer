@@ -1,0 +1,34 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>Glacc</RootNamespace>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="FIRFilterDouble\FIRFilter.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="FIRFilterDouble\FIRFilter.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="SFML.Net" Version="2.6.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="HarmonyOS_Sans_SC_Regular.ttf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="copy /Y &quot;$(SolutionDir)\x64\Debug\FIR.dll&quot; &quot;$(TargetDir)\FIR.dll&quot;" />
+  </Target>
+
+</Project>
