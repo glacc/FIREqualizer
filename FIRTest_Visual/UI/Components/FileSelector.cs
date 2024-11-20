@@ -228,19 +228,6 @@ namespace Glacc.UI.Components
             ipbPath.text = dirInfo.FullName;
 
             int preservedItems = 0;
-            /* Go to root */
-            Button? btnGoRoot = null;
-            if (dirInfo.FullName != dirInfo.Root.FullName)
-            {
-                btnGoRoot = new Button("[root]", btnX, btnY, btnWidth, btnHeight);
-                btnGoRoot.textAlign = TextAlign.Left;
-                btnGoRoot.customData = "dir\n" + dirInfo.Root;
-                btnGoRoot.onClick += OnItemSelect;
-                directoryListing.elements.Add(btnGoRoot);
-                preservedItems++;
-                btnY += btnYInc;
-            }
-
             /* Go to parent */
             Button btnGoParent = new Button("[parent]", btnX, btnY, btnWidth, btnHeight);
             btnGoParent.textAlign = TextAlign.Left;
@@ -255,6 +242,19 @@ namespace Glacc.UI.Components
             directoryListing.elements.Add(btnGoParent);
             preservedItems++;
             btnY += btnYInc;
+
+            /* Go to root */
+            Button? btnGoRoot = null;
+            if (dirInfo.FullName != dirInfo.Root.FullName)
+            {
+                btnGoRoot = new Button("[root]", btnX, btnY, btnWidth, btnHeight);
+                btnGoRoot.textAlign = TextAlign.Left;
+                btnGoRoot.customData = "dir\n" + dirInfo.Root;
+                btnGoRoot.onClick += OnItemSelect;
+                directoryListing.elements.Add(btnGoRoot);
+                preservedItems++;
+                btnY += btnYInc;
+            }
 
             try
             {
