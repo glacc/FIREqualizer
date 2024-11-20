@@ -125,8 +125,7 @@ namespace Glacc.UI
                 stopwatch.Stop();
                 double elaspedMs = stopwatch.Elapsed.TotalMilliseconds;
                 stopwatch.Restart();
-                if (elaspedMs != double.NaN)
-                    timeAfterLastUpdate += (float)elaspedMs;
+                timeAfterLastUpdate += (float)elaspedMs;
 
                 int updateCount = 0;
                 while (timeAfterLastUpdate >= timeEachUpdate)
