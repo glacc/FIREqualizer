@@ -74,9 +74,9 @@ namespace Glacc.UI.Elements
                 txt.DisplayedString = label;
                 txt.CharacterSize = (uint)fontSize;
 
-                float origy = txt.GetLocalBounds().Top + txt.GetLocalBounds().Height / 2f;
+                float origy = txt.GetLocalBounds().Top + (txt.GetLocalBounds().Height / 2f);
                 float origx = 0f;
-                int txtPy = py + height / 2;
+                int txtPy = py + (height / 2);
                 int txtPx = 0;
                 switch (textAlign)
                 {
@@ -84,19 +84,19 @@ namespace Glacc.UI.Elements
                     case TextAlign.Left:
                     case TextAlign.BottomLeft:
                         origx = txt.GetLocalBounds().Left;
-                        txtPx = px + fontSize / 2;
+                        txtPx = px + (fontSize / 2);
                         break;
                     case TextAlign.Top:
                     case TextAlign.Center:
                     case TextAlign.Bottom:
-                        origx = txt.GetLocalBounds().Left + txt.GetLocalBounds().Width / 2f;
-                        txtPx = px + width / 2;
+                        origx = txt.GetLocalBounds().Left + (txt.GetLocalBounds().Width / 2f);
+                        txtPx = px + (width / 2);
                         break;
                     case TextAlign.TopRight:
                     case TextAlign.Right:
                     case TextAlign.BottomRight:
                         origx = txt.GetLocalBounds().Left + txt.GetLocalBounds().Width;
-                        txtPx = px + width - fontSize / 2;
+                        txtPx = px + width - (fontSize / 2);
                         break;
                 }
 

@@ -220,7 +220,7 @@ namespace Glacc.UI
             {
                 int distX = mouseX - mouseXpress;
                 int distY = mouseY - mouseYpress;
-                float dist = MathF.Sqrt(distX * distX + distY * distY);
+                float dist = MathF.Sqrt((distX * distX) + (distY * distY));
 
                 if (dist > mouseDragStartThreshold)
                     mouseDrag = true;

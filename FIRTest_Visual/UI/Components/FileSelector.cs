@@ -186,7 +186,7 @@ namespace Glacc.UI.Components
 
             int btnSpacing = 4;
             int btnHeight = 24;
-            int btnWidth = directoryListing.width - btnSpacing * 2;
+            int btnWidth = directoryListing.width - (btnSpacing * 2);
             int btnYInc = btnHeight + btnSpacing;
 
             int btnX = btnSpacing;
@@ -201,7 +201,7 @@ namespace Glacc.UI.Components
                     ipbPath.text = string.Empty;
 
                     directoryListing.width = directoryListing.width;
-                    directoryListing.height = btnSpacing + btnYInc * listOfDriveInfo.Length;
+                    directoryListing.height = btnSpacing + (btnYInc * listOfDriveInfo.Length);
                     directoryListing.UpdateSize();
 
                     currPage = 0;
@@ -283,7 +283,7 @@ namespace Glacc.UI.Components
                 if (page == maxPage)
                     numOfitemsToList = numOfItems % maxItemPerPage;
 
-                int newDirectoryListingHeight = btnSpacing + btnYInc * (numOfitemsToList + preservedItems);
+                int newDirectoryListingHeight = btnSpacing + (btnYInc * (numOfitemsToList + preservedItems));
                 directoryListing.width = directoryListing.width;
                 directoryListing.height = newDirectoryListingHeight;
                 directoryListing.UpdateSize();
@@ -400,7 +400,7 @@ namespace Glacc.UI.Components
             ipbPath.onEnterPressed += OnPathEntered;
             elements.Add(ipbPath);
 
-            int widthOfDirectoryListingViewport = width - elemSpacing * 2;
+            int widthOfDirectoryListingViewport = width - (elemSpacing * 2);
             widthOfDirectoryListing = widthOfDirectoryListingViewport - 16;
             int startYOfDirectoryListing = elemSpacing + elemHeight + elemSpacing;
             int heightOfDirectoryListing = height - startYOfDirectoryListing - elemSpacing - elemHeight - elemSpacing;
@@ -416,7 +416,7 @@ namespace Glacc.UI.Components
             prevBtn = new Button("Prev", btnX, btnY, btnWidth, elemHeight);
             prevBtn.onClick += OnPrevClicked;
             btnX += btnXInc;
-            pageLabel = new Label("", btnX + btnWidth / 2, btnY + elemHeight / 2, 16);
+            pageLabel = new Label("", btnX + (btnWidth / 2), btnY + (elemHeight / 2), 16);
             pageLabel.textAlign = TextAlign.Center;
             btnX += btnXInc;
             nextBtn = new Button("Next", btnX, btnY, btnWidth, elemHeight);

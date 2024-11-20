@@ -316,7 +316,7 @@ namespace Glacc.FIRTest_Visual
 
             int numOfBand = int.Parse(scrollBar.customData);
 
-            float magnitudeDb = minDb + (maxDb - minDb) * (1f - scrollBar.scrollPercent);
+            float magnitudeDb = minDb + ((maxDb - minDb) * (1f - scrollBar.scrollPercent));
 
             magnitudesInDb[numOfBand] = magnitudeDb;
             magnitudeLabels[numOfBand].text = $"{magnitudeDb:+0.0;-0.0} dB";
@@ -394,7 +394,7 @@ namespace Glacc.FIRTest_Visual
                 scrollBarEqualizerBand.scrollPercent = 1f - defaultPercent;
 
                 // Label
-                int labelx = px + scrollBarWidth / 2;
+                int labelx = px + (scrollBarWidth / 2);
                 int labely = py + scrollBarLength;
 
                 float bandFreq = bands[i];
@@ -452,7 +452,7 @@ namespace Glacc.FIRTest_Visual
 
                         float percent = (currFreqHz - currBandHz) / (nextBandHz - currBandHz);
 
-                        currMagnitudeDb = currBandMagnitudeDb + (nextBandMagnitudeDb - currBandMagnitudeDb) * MathF.Sin((MathF.PI / 2f) * percent);
+                        currMagnitudeDb = currBandMagnitudeDb + ((nextBandMagnitudeDb - currBandMagnitudeDb) * MathF.Sin((MathF.PI / 2f) * percent));
                     }
                     else
                         currMagnitudeDb = currBandMagnitudeDb;
@@ -627,7 +627,7 @@ namespace Glacc.FIRTest_Visual
 
         static void AddFileSelectorBtns()
         {
-            openedFileLabel = new Label("", 16, appWindow.height - 16 * 3 - 8, 16);
+            openedFileLabel = new Label("", 16, appWindow.height - (16 * 3) - 8, 16);
             openedFileLabel.textAlign = TextAlign.Left;
             elements.Add(openedFileLabel);
 

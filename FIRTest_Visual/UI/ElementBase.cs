@@ -13,7 +13,7 @@ namespace Glacc.UI
         BottomLeft	= 0x20,
         Bottom		= 0x21,
         BottomRight	= 0x22,
-    };
+    }
 
     class Element
     {

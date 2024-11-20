@@ -7,7 +7,7 @@ namespace Glacc.UI
     {
         public static void UpdateTextOrigins(Text text, TextAlign align = TextAlign.TopLeft)
         {
-            float origy = text.GetLocalBounds().Top + text.GetLocalBounds().Height / 2f;
+            float origy = text.GetLocalBounds().Top + (text.GetLocalBounds().Height / 2f);
             float origx = 0f;
             switch (align)
             {
@@ -19,7 +19,7 @@ namespace Glacc.UI
                 case TextAlign.Top:
                 case TextAlign.Center:
                 case TextAlign.Bottom:
-                    origx = text.GetLocalBounds().Left + text.GetLocalBounds().Width / 2f;
+                    origx = text.GetLocalBounds().Left + (text.GetLocalBounds().Width / 2f);
                     break;
                 case TextAlign.TopRight:
                 case TextAlign.Right:
@@ -37,7 +37,7 @@ namespace Glacc.UI
                 case TextAlign.Left:
                 case TextAlign.Center:
                 case TextAlign.Right:
-                    origy = text.GetLocalBounds().Top + text.GetLocalBounds().Height / 2f;
+                    origy = text.GetLocalBounds().Top + (text.GetLocalBounds().Height / 2f);
                     break;
                 case TextAlign.BottomLeft:
                 case TextAlign.Bottom:

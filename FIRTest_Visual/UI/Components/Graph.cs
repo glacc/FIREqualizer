@@ -75,8 +75,8 @@ namespace Glacc.UI.Components
                 float percentx = (currx - left) / leftToRight;
                 float percenty = (curry - top) / topToBottom;
 
-                float pointx = startx + (endx - startx) * percentx;
-                float pointy = starty + (endy - starty) * percenty;
+                float pointx = startx + ((endx - startx) * percentx);
+                float pointy = starty + ((endy - starty) * percenty);
 
                 Vertex vertex = new Vertex(new Vector2f(pointx, pointy), lineColor);
 
@@ -112,11 +112,11 @@ namespace Glacc.UI.Components
                 float percentx = (currx - left) / leftToRight;
                 float percenty = (curry - top) / topToBottom;
 
-                float pointx = startx + (endx - startx) * percentx;
-                float pointy = starty + (endy - starty) * percenty;
+                float pointx = startx + ((endx - startx) * percentx);
+                float pointy = starty + ((endy - starty) * percenty);
 
                 vertices[(uint)i * 2]     = new Vertex(new Vector2f(pointx, pointy), lineColor);
-                vertices[(uint)i * 2 + 1] = new Vertex(new Vector2f(pointx, yOfXAxis), lineColor);
+                vertices[((uint)i * 2) + 1] = new Vertex(new Vector2f(pointx, yOfXAxis), lineColor);
 
                 CircleShape stemPoint = new CircleShape(stemPtRadius);
                 stemPoint.Position = new Vector2f((int)(pointx - stemPtRadius), (int)(pointy - stemPtRadius));
@@ -145,22 +145,22 @@ namespace Glacc.UI.Components
             int endy = height - safeZonePixels;
 
             // Axis
-            yOfXAxis = starty + (endy - starty) * axisYPercent;
+            yOfXAxis = starty + ((endy - starty) * axisYPercent);
             vertexList.Add(new Vertex(new Vector2f(0, yOfXAxis), axisColor));
             vertexList.Add(new Vertex(new Vector2f(width, yOfXAxis), axisColor));
 
-            xOfYAxis = startx + (endx - startx) * axisXPercent;
+            xOfYAxis = startx + ((endx - startx) * axisXPercent);
             vertexList.Add(new Vertex(new Vector2f(xOfYAxis, 0), axisColor));
             vertexList.Add(new Vertex(new Vector2f(xOfYAxis, height), axisColor));
 
             // Scale
             if (yOfXAxis >= 0 && yOfXAxis < height)
             {
-                float sclStartY = yOfXAxis - sclLen / 2f;
-                float sclEndY = yOfXAxis + sclLen / 2f;
+                float sclStartY = yOfXAxis - (sclLen / 2f);
+                float sclEndY = yOfXAxis + (sclLen / 2f);
 
                 float sclGapX = MathF.Abs(sclx / (right - left));
-                float sclGapXScrn = sclGapX * (width - safeZonePixels * 2);
+                float sclGapXScrn = sclGapX * (width - (safeZonePixels * 2));
 
                 float sclXScrn = xOfYAxis % width;
                 while (sclXScrn > 0)
@@ -175,11 +175,11 @@ namespace Glacc.UI.Components
             }
             if (xOfYAxis >= 0 && xOfYAxis < width)
             {
-                float sclStartX = xOfYAxis - sclLen / 2f;
-                float sclEndX = xOfYAxis + sclLen / 2f;
+                float sclStartX = xOfYAxis - (sclLen / 2f);
+                float sclEndX = xOfYAxis + (sclLen / 2f);
 
                 float sclGapY = MathF.Abs(scly / (bottom - top));
-                float sclGapYScrn = sclGapY * (height - safeZonePixels * 2);
+                float sclGapYScrn = sclGapY * (height - (safeZonePixels * 2));
 
                 float sclYScrn = yOfXAxis % height;
                 while (sclYScrn > 0)
