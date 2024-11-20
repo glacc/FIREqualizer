@@ -676,7 +676,7 @@ namespace Glacc.FIRTest_Visual
             int py = appWindow.height - spacing - 16;
             int px = spacing;
 
-            progressBar = new ScrollBar(px, py, 16, 512, Orientation.Horizontal);
+            progressBar = new ScrollBar(px, py, 16, 512, ScrollBarDirection.Horizontal);
             progressBar.scrollerSizePixels = progressBar.width;
             progressBar.scrollBgSpeedMultiplier = 5f;
             progressBar.onScrollEnds = OnProgressBarSeek;

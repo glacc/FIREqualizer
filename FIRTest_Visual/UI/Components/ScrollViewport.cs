@@ -150,8 +150,8 @@ namespace Glacc.UI.Elements
             viewportVisableArea = new Viewport(0, 0, visableWidth, visableHeight);
             viewportVisableArea.bgColor = Color.Transparent;
 
-            scrollHorz = new ScrollBar(0, height - scrollBarWidth, scrollBarWidth, width, Orientation.Horizontal);
-            scrollVert = new ScrollBar(width - scrollBarWidth, 0, scrollBarWidth, height, Orientation.Vertical);
+            scrollHorz = new ScrollBar(0, height - scrollBarWidth, scrollBarWidth, width, ScrollBarDirection.Horizontal);
+            scrollVert = new ScrollBar(width - scrollBarWidth, 0, scrollBarWidth, height, ScrollBarDirection.Vertical);
 
             this.viewport = viewport;
 

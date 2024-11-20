@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Glacc.UI.Components
 {
-    enum Orientation
+    enum ScrollBarDirection
     {
         Horizontal,
         Vertical,
@@ -21,7 +21,7 @@ namespace Glacc.UI.Components
         public int width;
         public int length;
 
-        public Orientation orientation;
+        public ScrollBarDirection orientation;
 
         float scrollPercentOld;
         public float scrollPercent;
@@ -75,7 +75,7 @@ namespace Glacc.UI.Components
             btnUpLeft.Position = new Vector2f(px, py);
             btnUpLeft.Size = btnDnRight.Size = new Vector2f(width, width);
 
-            if (orientation == Orientation.Horizontal)
+            if (orientation == ScrollBarDirection.Horizontal)
             {
                 bgRect.Size = new Vector2f(length, width);
                 btnDnRight.Position = new Vector2f(px + length - width, py);
@@ -96,7 +96,7 @@ namespace Glacc.UI.Components
             int scrollerMoveRange = scrollerZone - scrollerLength;
             int scrollerPos = width + (int)(scrollerMoveRange * scrollPercent);
 
-            if (orientation == Orientation.Horizontal)
+            if (orientation == ScrollBarDirection.Horizontal)
                 Utils.CheckMouseHover(px + scrollerPos, py, scrollerLength, width, out mouseHoverScroller, this);
             else
                 Utils.CheckMouseHover(px, py + scrollerPos, width, scrollerLength, out mouseHoverScroller, this);
@@ -117,7 +117,7 @@ namespace Glacc.UI.Components
                 {
                     int scrollPosCentered = scrollerPos + (scrollerLength / 2);
                     float scrollSpeedMultiplied = scrollSpeedPercent * scrollBgSpeedMultiplier;
-                    if (orientation == Orientation.Horizontal)
+                    if (orientation == ScrollBarDirection.Horizontal)
                     {
                         if (Event.mouseX > px + scrollPosCentered)
                             scrollPercent += scrollSpeedMultiplied;
@@ -162,7 +162,7 @@ namespace Glacc.UI.Components
             float scrollVel = 0f;
             if (mouseDragScroller)
             { 
-                if (orientation == Orientation.Horizontal)
+                if (orientation == ScrollBarDirection.Horizontal)
                     scrollVel = Event.mouseXvel;
                 else
                     scrollVel = Event.mouseYvel;
@@ -178,7 +178,7 @@ namespace Glacc.UI.Components
             scrollPercent = MathF.Max(0f, MathF.Min(scrollPercent, 1f));
 
             scrollerPos = width + (int)(scrollerMoveRange * scrollPercent);
-            if (orientation == Orientation.Horizontal)
+            if (orientation == ScrollBarDirection.Horizontal)
                 scroller.Position = new Vector2f(px + scrollerPos, py);
             else
                 scroller.Position = new Vector2f(px, py + scrollerPos);
@@ -194,7 +194,7 @@ namespace Glacc.UI.Components
 
             Utils.CheckMouseHover(px, py, width, width, out mouseHoverUpLeft, this);
 
-            if (orientation == Orientation.Horizontal)
+            if (orientation == ScrollBarDirection.Horizontal)
             {
                 Utils.CheckMouseHover(px, py, length, width, out m_mouseHover, this);
                 Utils.CheckMouseHover(px + length - width, py, width, width, out mouseHoverDnRight, this);
@@ -239,7 +239,7 @@ namespace Glacc.UI.Components
             return drawables;
         }
 
-        public ScrollBar(int px, int py, int width, int length, Orientation orientation = Orientation.Vertical)
+        public ScrollBar(int px, int py, int width, int length, ScrollBarDirection orientation = ScrollBarDirection.Vertical)
         {
             this.px = px;
             this.py = py;
