@@ -327,15 +327,19 @@ namespace Glacc.FIRTest_Visual
         const float maxDb = 0f;
         const float defaultPercent = 1f;
 
-        const int taps = 2048;
-        static float[] equalizerCurve = new float[taps / 2];
-        static float[] equalizerFreqs = new float[taps];
+        static int taps = 256;
+        const int minTaps = 8;
+        const int maxTaps = 16384;
+        static float[] equalizerCurve = Array.Empty<float>();
+        static float[] equalizerFreqs = Array.Empty<float>();
 
-        static float[] equalizerCurveXCoord = new float[taps / 2];
+        static float[] equalizerCurveXCoord = Array.Empty<float>();
         static Graph<float, float> equalizerCurveGraph = new Graph<float, float>(0, 256, 512, 160);
 
-        static float[] filterImpulseXCoord = new float[taps];
+        static float[] filterImpulseXCoord = Array.Empty<float>();
         static Graph<float, float> filterImpulseGraph = new Graph<float, float>(0, 256 + 192, 512, 160);
+
+        static InputBox? ipbTaps;
 
         static void OnEqualizerMove(object? sender, EventArgs e)
         {
@@ -363,12 +367,72 @@ namespace Glacc.FIRTest_Visual
             ApplyEqualizerCurve();
         }
 
-        static void InitFreqGraph()
+        static void OnNewTapsLostFocus(object? sender, EventArgs e)
         {
-            // Equalizer Curve
+            if (sender == null)
+                return;
+
+            InputBox? inputBox = sender as InputBox;
+            if (inputBox == null)
+                return;
+
+            inputBox.text = $"{taps}";
+        }
+
+        static void OnNewTapsEntered(object? sender, EventArgs e)
+        {
+            if (sender == null)
+                return;
+
+            InputBox? inputBox = sender as InputBox;
+            if (inputBox == null)
+                return;
+
+            int newTaps = -1;
+            int.TryParse(inputBox.text, out newTaps);
+            if (newTaps <= minTaps)
+                newTaps = minTaps;
+            if (newTaps >= maxTaps)
+                newTaps = maxTaps;
+
+            if (newTaps == taps)
+            {
+                inputBox.text = $"{taps}";
+                return;
+            }
+
+            taps = newTaps;
+
+            InitOrUpdateTaps();
+
+            RecalcEqualizerCurve();
+
+            ApplyEqualizerCurve();
+        }
+
+        static void InitOrUpdateTaps()
+        {
+            equalizerCurve = new float[taps / 2];
+            equalizerFreqs = new float[taps];
+            equalizerCurveXCoord = new float[taps / 2];
+
+            filterImpulseXCoord = new float[taps];
+
             for (int i = 0; i < taps / 2; i++)
                 equalizerCurveXCoord[i] = i;
 
+            for (int i = 0; i < taps; i++)
+                filterImpulseXCoord[i] = i;
+
+            equalizerCurveGraph.right = taps / 2;
+            filterImpulseGraph.right = taps;
+            equalizerCurveGraph.horz = equalizerCurveXCoord;
+            filterImpulseGraph.horz = filterImpulseXCoord;
+        }
+
+        static void InitFreqGraph()
+        {
+            // Equalizer Curve
             equalizerCurveGraph.left = 0f;
             equalizerCurveGraph.right = taps / 2;
             equalizerCurveGraph.top = 1f;
@@ -383,9 +447,6 @@ namespace Glacc.FIRTest_Visual
             elements.Add(equalizerCurveGraph);
 
             // Filter Impulse
-            for (int i = 0; i < taps; i++)
-                filterImpulseXCoord[i] = i;
-
             filterImpulseGraph.left = 0f;
             filterImpulseGraph.right = taps;
             filterImpulseGraph.top = 1f;
@@ -412,6 +473,8 @@ namespace Glacc.FIRTest_Visual
 
         static void InitEqualizer()
         {
+            InitFreqGraph();
+
             int px = 16;
             int py = 16;
             int pInc = 32;
@@ -454,6 +517,19 @@ namespace Glacc.FIRTest_Visual
 
             foreach (Label label in magnitudeLabels)
                 elements.Add(label);
+
+            px += 32;
+
+            Label labelTaps = new Label($"FIR taps", px, py + 12, 16);
+            labelTaps.textAlign = TextAlign.Left;
+            elements.Add(labelTaps);
+            px += 72;
+
+            ipbTaps = new InputBox(px, py, 240, 24, $"{taps}");
+            ipbTaps.lostFocusAfterEnter = true;
+            ipbTaps.onEnterPressed += OnNewTapsEntered;
+            ipbTaps.onLostFocus += OnNewTapsLostFocus;
+            elements.Add(ipbTaps);
 
             RecalcEqualizerCurve();
         }
@@ -515,6 +591,7 @@ namespace Glacc.FIRTest_Visual
             {
                 FIRFilter filter;
 
+                /*
                 if (audioStream.filters[i] == null)
                 {
                     filter = new FIRFilter(ref equalizerFreqs);
@@ -527,6 +604,10 @@ namespace Glacc.FIRTest_Visual
 
                     filter = audioStream.filters[i]!;
                 }
+                */
+
+                filter = new FIRFilter(ref equalizerFreqs);
+                audioStream.filters[i] = filter;
 
                 lastFilter = filter;
             }
@@ -842,7 +923,7 @@ namespace Glacc.FIRTest_Visual
                 testStream.filters[i] = new FIRFilter(ref freqs);
             */
 
-            InitFreqGraph();
+            InitOrUpdateTaps();
 
             InitEqualizer();
             RecalcEqualizerCurve();
