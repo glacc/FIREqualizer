@@ -46,11 +46,13 @@ void FIR_CreateImpulse(float *freqs, float *impulse, int count)
     for (;i < count / 2; i++)
         impulse[j++] = (*(Complex *)Vector_Index(&impulseComplex, i)).real;
 
+    /*
     for (int i = 0; i < count; i++)
     {
         float window = 0.54f - 0.46f * cosf(2.0f * (float)M_PI * i / (count - 1));
         impulse[i] *= window;
     }
+    */
 }
 
 void FIR_ZeroFilter(FIR_Filter *filter)
