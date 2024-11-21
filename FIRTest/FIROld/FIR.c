@@ -158,10 +158,21 @@ float FIR_Next(FIR_Filter *filter, float input)
     }
 
     originalSignal[offsetFirst] = input;
+    
+    // Last
+    int offsetLast = WrapToQueue(signalLength, pos, impulseLength);
+    float last = originalSignal[offsetLast];
+
+    offset = WrapToQueue(signalLength, offsetLast, -halfImpluseLength);
+    for (int i = 0; i < impulseLength; i++)
+    {
+        outputSignal[offset] -= impulse[i] * last;
+        
+        offset = WrapToQueue(signalLength, offset, 1);
+    }
 
     // Cleanup
-    // int offsetClear = WrapToQueue(signalLength, pos, impulseLength + halfImpluseLength);
-    int offsetClear = WrapToQueue(signalLength, pos, impulseLength);
+    int offsetClear = WrapToQueue(signalLength, pos, impulseLength + halfImpluseLength);
     originalSignal[offsetClear] = 0.0;
     outputSignal[offsetClear] = 0.0;
 

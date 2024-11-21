@@ -5,7 +5,7 @@ using System.Numerics;
 
 namespace Glacc.UI.Components
 {
-    class Graph<T1, T2> : UI.Element
+    class Graph<T1, T2> : Element
         where T1 : INumber<T1>
         where T2 : INumber<T2>
     {
@@ -202,8 +202,8 @@ namespace Glacc.UI.Components
 
         public void BeginDraw()
         {
-            renderTexture = new RenderTexture((uint)width, (uint)height);
-            renderTexture.Smooth = true;
+            if (renderTexture == null)
+                return;
 
             renderTexture.Clear(bgColor);
 
@@ -232,6 +232,15 @@ namespace Glacc.UI.Components
             drawables = [sprite];
         }
 
+        public void UpdateTexture()
+        {
+            if (renderTexture != null)
+                renderTexture.Dispose();
+
+            renderTexture = new RenderTexture((uint)width, (uint)height);
+            renderTexture.Smooth = true;
+        }
+
         public override Drawable?[] Draw()
         {
             if (sprite != null)
@@ -246,6 +255,8 @@ namespace Glacc.UI.Components
             this.py = py;
             this.width = width;
             this.height = height;
+
+            UpdateTexture();
         }
     }
 }

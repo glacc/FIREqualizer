@@ -26,7 +26,7 @@ namespace Glacc.UI.Elements
 
         public Color bgColor = Settings.bgColor;
 
-        RenderTexture texture;
+        RenderTexture? texture;
         Sprite sprite;
 
         Drawable[] drawables;
@@ -44,6 +44,9 @@ namespace Glacc.UI.Elements
             {
                 m_width = m_width_buf;
                 m_height = m_height_buf;
+
+                if (texture != null)
+                    texture.Dispose();
 
                 texture = new RenderTexture((uint)m_width, (uint)m_height);
 
@@ -80,6 +83,9 @@ namespace Glacc.UI.Elements
 
         public override Drawable?[] Draw()
         {
+            if (texture == null)
+                return Array.Empty<Drawable>();
+
             texture.Clear(bgColor);
 
             Utils.DrawElements(elements, texture);

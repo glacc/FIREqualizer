@@ -17,7 +17,7 @@ namespace Glacc.FIRTest_Visual
 
         static FIRFilter? filter;
 
-        static void TestFIRWithGraph(int n, int cutoffLF, int cutoffHF)
+        static void TestFIRWithGraph(int n, int cutoffLF, int cutoffHF, int signalLength)
         {
             /*
             const int n = 127;
@@ -81,14 +81,13 @@ namespace Glacc.FIRTest_Visual
             elements.Add(graphImpulse);
             elements.Add(signalGraph);
 
-            const int signalLen = 256;
-            int[] periods = [32, 0];
-            int[] wavelens = [8 /*8, 32*/];
+            int[] periods = [64, 0];
+            int[] wavelens = [0 /*8*/ /*8, 32*/];
 
-            xCoordSignal = new float[signalLen];
-            float[] originalSignal = new float[signalLen];
-            float[] filteredSignal = new float[signalLen];
-            for (int i = 0; i < signalLen; i++)
+            xCoordSignal = new float[signalLength];
+            float[] originalSignal = new float[signalLength];
+            float[] filteredSignal = new float[signalLength];
+            for (int i = 0; i < signalLength; i++)
             {
                 float signal = 0.0f;
                 for (int j = 0; j < periods.Length; j++)
@@ -115,7 +114,7 @@ namespace Glacc.FIRTest_Visual
 
             signalGraph.horz = xCoordSignal;
             signalGraph.left = 0;
-            signalGraph.right = signalLen;
+            signalGraph.right = signalLength;
             signalGraph.top = 1.5f;
             signalGraph.bottom = -1.5f;
             signalGraph.sclx = 16;
@@ -735,7 +734,7 @@ namespace Glacc.FIRTest_Visual
 
             audioStream.Play();
 
-            // TestFIRWithGraph(127, 0, 8);
+            // TestFIRWithGraph(128, 0, 16, 512);
 
             InitProgressBar();
 
