@@ -174,7 +174,11 @@ namespace Glacc.FIRTest_Visual
 
             public bool updateFlag = false;
 
+            public bool multithreaded = true;
+
             short[] buffer = Array.Empty<short>();
+
+            List<Task> tasks = new List<Task>();
 
             public int currPosSample
             {
@@ -210,34 +214,90 @@ namespace Glacc.FIRTest_Visual
                     return false;
                 }
 
-                for (int i = 0; i < buffer.Length; i += numOfChannels)
+                if (multithreaded)
                 {
                     mutex.WaitOne();
 
-                    for (int j = 0; j < numOfChannels; j++)
+                    int numOfCores = Environment.ProcessorCount;
+
+                    SemaphoreSlim semaphore = new SemaphoreSlim(numOfCores, numOfCores);
+
+                    Action<int> worker = delegate (int channel)
                     {
-                        short currSample;
-                        if (samplePos < inputSamples.Length)
+                        int posInput = samplePos + channel;
+
+                        semaphore.Wait();
+
+                        FIRFilter? filter = filters[channel];
+                        if (filter == null)
+                            return;
+
+                        for (int i = channel; i < bufferSize; i += numOfChannels)
                         {
-                            int currIter = (int)filters[j]!.Next(inputSamples[samplePos]);
-                            if (currIter > 32767)
-                                currIter = 32767;
-                            if (currIter < -32768)
-                                currIter = -32768;
+                            int currIter = (int)filter.Next(inputSamples[posInput]);
+                            if (currIter > short.MaxValue)
+                                currIter = short.MaxValue;
+                            if (currIter < short.MinValue)
+                                currIter = short.MinValue;
 
-                            currSample = (short)currIter;
+                            buffer[i] = (short)currIter;
 
-                            samplePos++;
+                            posInput += numOfChannels;
+                            if (posInput >= inputSamples.Length)
+                                break;
                         }
-                        else
-                            currSample = 0;
 
-                        buffer[i + j] = currSample;
+                        semaphore.Release();
+                    };
+
+                    tasks.Clear();
+                    for (int i = 0; i < numOfChannels; i++)
+                    {
+                        int numOfChannel = i;
+
+                        Task newTask = Task.Run(() => worker(numOfChannel));
+
+                        tasks.Add(newTask);
                     }
+                    Task.WaitAll(tasks.ToArray());
+
+                    samplePos += (int)bufferSize;
 
                     updateFlag = true;
 
                     mutex.ReleaseMutex();
+                }
+                else
+                {
+                    for (int i = 0; i < buffer.Length; i += numOfChannels)
+                    {
+                        mutex.WaitOne();
+
+                        for (int j = 0; j < numOfChannels; j++)
+                        {
+                            short currSample;
+                            if (samplePos < inputSamples.Length)
+                            {
+                                int currIter = (int)filters[j]!.Next(inputSamples[samplePos]);
+                                if (currIter > 32767)
+                                    currIter = 32767;
+                                if (currIter < -32768)
+                                    currIter = -32768;
+
+                                currSample = (short)currIter;
+
+                                samplePos++;
+                            }
+                            else
+                                currSample = 0;
+
+                            buffer[i + j] = currSample;
+                        }
+
+                        updateFlag = true;
+
+                        mutex.ReleaseMutex();
+                    }
                 }
 
                 samples = buffer;
@@ -340,6 +400,20 @@ namespace Glacc.FIRTest_Visual
         static Graph<float, float> filterImpulseGraph = new Graph<float, float>(0, 256 + 192, 512, 160);
 
         static InputBox? ipbTaps;
+
+        static void OnThreadToggleClicked(object? sender, EventArgs e)
+        {
+            if (sender == null)
+                return;
+
+            audioStream.multithreaded = !audioStream.multithreaded;
+
+            Button? button = sender as Button;
+            if (button == null)
+                return;
+
+            button.text = audioStream.multithreaded ? "Multithreaded" : "Singlethread";
+        }
 
         static void OnEqualizerMove(object? sender, EventArgs e)
         {
@@ -520,6 +594,10 @@ namespace Glacc.FIRTest_Visual
 
             px += 32;
 
+            Button btnMultithread = new Button("Multithreaded", px, py + 24 + 16, 160, 24);
+            btnMultithread.onClick += OnThreadToggleClicked;
+            elements.Add(btnMultithread);
+
             Label labelTaps = new Label($"FIR taps", px, py + 12, 16);
             labelTaps.textAlign = TextAlign.Left;
             elements.Add(labelTaps);
@@ -590,21 +668,6 @@ namespace Glacc.FIRTest_Visual
             for (int i = 0; i < audioStream.filters.Length; i++)
             {
                 FIRFilter filter;
-
-                /*
-                if (audioStream.filters[i] == null)
-                {
-                    filter = new FIRFilter(ref equalizerFreqs);
-
-                    audioStream.filters[i] = filter;
-                }
-                else
-                {
-                    audioStream.filters[i]!.UpdateFreqs(ref equalizerFreqs);
-
-                    filter = audioStream.filters[i]!;
-                }
-                */
 
                 filter = new FIRFilter(ref equalizerFreqs);
                 audioStream.filters[i] = filter;
