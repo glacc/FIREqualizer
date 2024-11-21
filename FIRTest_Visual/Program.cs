@@ -261,6 +261,11 @@ namespace Glacc.FIRTest_Visual
                     }
                     Task.WaitAll(tasks.ToArray());
 
+                    foreach (Task task in tasks)
+                        task.Dispose();
+
+                    semaphore.Dispose();
+
                     samplePos += (int)bufferSize;
 
                     updateFlag = true;
@@ -682,8 +687,8 @@ namespace Glacc.FIRTest_Visual
 
             float maxVal = float.MinValue;
             float minVal = float.MaxValue;
-            float[] impulse = new float[lastFilter.impulseLength];
-            for (int i = 0; i < lastFilter.impulseLength; i++)
+            float[] impulse = new float[lastFilter.filterLength];
+            for (int i = 0; i < lastFilter.filterLength; i++)
             {
                 float val = lastFilter.Impulse(i);
 

@@ -5,13 +5,13 @@
 
 typedef struct
 {
+    int filterLength;
+
     float *freqs;
     float *impulse;
-    int impulseLength;
     
     float *originalSignal;
     float *outputSignal;
-    int signalLength;
 }
 FIR_Filter;
 

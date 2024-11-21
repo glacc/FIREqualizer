@@ -12,13 +12,13 @@ namespace Glacc
         [StructLayout(LayoutKind.Sequential)]
         unsafe struct FIR_Filter
         {
+            public int filterLength;
+
             public float* freqs;
             public float* impulse;
-            public int impulseLength;
 
             public float* originalSignal;
             public float* outputSignal;
-            public int signalLength;
         }
 
         #region C Methods
@@ -42,27 +42,9 @@ namespace Glacc
 
         FIR_Filter filter = new FIR_Filter();
 
-        public int signalLength
+        public int filterLength
         {
-            get => filter.signalLength;
-        }
-
-        public int freqLength
-        {
-            get => filter.impulseLength;
-        }
-
-        public int impulseLength
-        {
-            get => filter.impulseLength;
-        }
-
-        public enum DataType
-        {
-            Freqs,
-            Impulse,
-            OriginalSignal,
-            OutputSignal
+            get => filter.filterLength;
         }
 
         void CheckIndexRange(int index, int count)
@@ -73,25 +55,25 @@ namespace Glacc
 
         public float Freqs(int index)
         {
-            CheckIndexRange(index, freqLength);
+            CheckIndexRange(index, filterLength);
             return filter.freqs[index];
         }
 
         public float Impulse(int index)
         {
-            CheckIndexRange(index, impulseLength);
+            CheckIndexRange(index, filterLength);
             return filter.impulse[index];
         }
 
         public float InputSignal(int index)
         {
-            CheckIndexRange(index, signalLength);
+            CheckIndexRange(index, filterLength);
             return filter.originalSignal[index];
         }
 
         public float OutputSignal(int index)
         {
-            CheckIndexRange(index, signalLength);
+            CheckIndexRange(index, filterLength);
             return filter.outputSignal[index];
         }
 

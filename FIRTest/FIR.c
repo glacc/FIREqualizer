@@ -68,6 +68,8 @@ bool FIR_CreateFilterByFreqs(FIR_Filter *filter, float *freqs, int count)
     if (filter == NULL)
         return false;
 
+    filter->filterLength = count;
+
     int filterSize = count * sizeof(float);
     filter->freqs = malloc(filterSize);
     filter->impulse = malloc(filterSize);
@@ -76,15 +78,12 @@ bool FIR_CreateFilterByFreqs(FIR_Filter *filter, float *freqs, int count)
 
     memcpy(filter->freqs, freqs, filterSize);
     FIR_CreateImpulse(filter->freqs, filter->impulse, count);
-    filter->impulseLength = count;
 
     int signalLength = count + 1;
     filter->originalSignal = calloc(signalLength, sizeof(float));
     filter->outputSignal = calloc(signalLength, sizeof(float));
     if (filter->originalSignal == NULL || filter->outputSignal == NULL)
         goto FIR_CreateFilterByFreqs_AllocFail;
-
-    filter->signalLength = signalLength;
 
     return true;
 
@@ -100,7 +99,7 @@ void FIR_UpdateFreqs(FIR_Filter *filter, float *freqs)
     if (filter == NULL || freqs == NULL)
         return;
 
-    int count = filter->impulseLength;
+    int count = filter->filterLength;
     memcpy(filter->freqs, freqs, sizeof(float) * count);
     FIR_CreateImpulse(filter->freqs, filter->impulse, count);
 }
@@ -122,9 +121,8 @@ void FIR_DestroyFilter(FIR_Filter *filter)
 
 float FIR_Next(FIR_Filter *filter, float input)
 {
-    int impulseLength = filter->impulseLength;
-    int halfImpluseLength = impulseLength / 2;
-    int signalLength = filter->signalLength;
+    int filterLength = filter->filterLength;
+    int halfImpluseLength = filterLength / 2;
 
     float *impulse = filter->impulse;
     float *originalSignal = filter->originalSignal;
@@ -133,21 +131,34 @@ float FIR_Next(FIR_Filter *filter, float input)
     float toReturn = outputSignal[0];
 
     float *ptrImpulse = impulse;
-    float *ptrOriginalSignal = originalSignal;
     float *ptrOutputSignal = outputSignal;
-    for (int i = 0; i < impulseLength; i++)
-    {
-        *ptrOutputSignal = (*(ptrOutputSignal + 1)) + ((*ptrImpulse) * input);
-        *ptrOriginalSignal = *(ptrOriginalSignal + 1);
+    float *ptrOriginalSignal = originalSignal;
 
-        ptrOutputSignal++;
+    int count = 0;
+    while(count < halfImpluseLength - 1)
+    {
+        *ptrOriginalSignal = *(ptrOriginalSignal + 1);
+        *ptrOutputSignal = (*(ptrOutputSignal + 1)) + ((*ptrImpulse) * input);
+        
         ptrOriginalSignal++;
+        ptrOutputSignal++;
         ptrImpulse++;
+
+        count++;
     }
     originalSignal[halfImpluseLength - 1] = input;
+    while(count <= filterLength)
+    {
+        *ptrOutputSignal = (*(ptrOutputSignal + 1)) + ((*ptrImpulse) * input);
 
-    outputSignal[signalLength - 1] = 0.0f;
-    originalSignal[signalLength - 1] = 0.0f;
+        ptrOutputSignal++;
+        ptrImpulse++;
+
+        count++;
+    }
+
+    outputSignal[filterLength] = 0.0f;
+    originalSignal[filterLength] = 0.0f;
 
     return toReturn;
 }
