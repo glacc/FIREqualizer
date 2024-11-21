@@ -9,7 +9,7 @@ namespace Glacc.UI.Elements
 {
     class Button : Element
     {
-        public string label;
+        public string text;
 
         public int px;
         public int py;
@@ -71,7 +71,7 @@ namespace Glacc.UI.Elements
             if (font != null)
             {
                 txt.Font = font;
-                txt.DisplayedString = label;
+                txt.DisplayedString = text;
                 txt.CharacterSize = (uint)fontSize;
 
                 float origy = txt.GetLocalBounds().Top + (txt.GetLocalBounds().Height / 2f);
@@ -110,7 +110,7 @@ namespace Glacc.UI.Elements
 
         public Button(string label, int px, int py, int width, int height)
         {
-            this.label = label;
+            this.text = label;
             this.px = px;
             this.py = py;
             this.width = width;

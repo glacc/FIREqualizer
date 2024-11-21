@@ -74,14 +74,13 @@ bool FIR_CreateFilterByFreqs(FIR_Filter *filter, float *freqs, int count)
     FIR_CreateImpulse(filter->freqs, filter->impulse, count);
     filter->impulseLength = count;
 
-    int signalLength = count * 2;
+    int signalLength = count + 1;
     filter->originalSignal = calloc(signalLength, sizeof(float));
     filter->outputSignal = calloc(signalLength, sizeof(float));
     if (filter->originalSignal == NULL || filter->outputSignal == NULL)
         goto FIR_CreateFilterByFreqs_AllocFail;
 
     filter->signalLength = signalLength;
-    filter->pos = 0;
 
     return true;
 
@@ -117,57 +116,34 @@ void FIR_DestroyFilter(FIR_Filter *filter)
         free(filter->outputSignal);
 }
 
-int WrapToQueue(int queueLength, int pos, int offset)
-{
-    int offsetNew = pos + offset;
-    while (offsetNew >= queueLength)
-        offsetNew -= queueLength;
-    while (offsetNew < 0)
-        offsetNew += queueLength;
-
-    return offsetNew;
-}
-
 float FIR_Next(FIR_Filter *filter, float input)
 {
     int impulseLength = filter->impulseLength;
     int halfImpluseLength = impulseLength / 2;
     int signalLength = filter->signalLength;
-    int pos = filter->pos;
-    
-    int offsetMiddle = WrapToQueue(signalLength, pos, halfImpluseLength);
-    float toReturn = filter->outputSignal[offsetMiddle];
 
-    // Pointers
     float *impulse = filter->impulse;
     float *originalSignal = filter->originalSignal;
     float *outputSignal = filter->outputSignal;
 
-    // Offset Initialization
-    int offset;
+    float toReturn = outputSignal[0];
 
-    // First
-    int offsetFirst = WrapToQueue(signalLength, pos, 0);
-
-    offset = WrapToQueue(signalLength, offsetFirst, -halfImpluseLength);
+    float *ptrImpulse = impulse;
+    float *ptrOriginalSignal = originalSignal;
+    float *ptrOutputSignal = outputSignal;
     for (int i = 0; i < impulseLength; i++)
     {
-        outputSignal[offset] += impulse[i] * input;
+        *ptrOutputSignal = (*(ptrOutputSignal + 1)) + ((*ptrImpulse) * input);
+        *ptrOriginalSignal = *(ptrOriginalSignal + 1);
 
-        offset = WrapToQueue(signalLength, offset, 1);
+        ptrOutputSignal++;
+        ptrOriginalSignal++;
+        ptrImpulse++;
     }
+    originalSignal[halfImpluseLength - 1] = input;
 
-    originalSignal[offsetFirst] = input;
-
-    // Cleanup
-    // int offsetClear = WrapToQueue(signalLength, pos, impulseLength + halfImpluseLength);
-    int offsetClear = WrapToQueue(signalLength, pos, impulseLength);
-    originalSignal[offsetClear] = 0.0;
-    outputSignal[offsetClear] = 0.0;
-
-    // Update Position
-    pos = WrapToQueue(signalLength, pos, -1);
-    filter->pos = pos;
+    outputSignal[signalLength - 1] = 0.0f;
+    originalSignal[signalLength - 1] = 0.0f;
 
     return toReturn;
 }

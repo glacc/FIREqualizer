@@ -15,7 +15,7 @@ namespace Glacc.FIRTest_Visual
 
         static List<Element?> elements = new List<Element?>();
 
-        static FIRFilter? filter;
+        #region TestGraphAndFilter
 
         static void TestFIRWithGraph(int n, int cutoffLF, int cutoffHF, int signalLength)
         {
@@ -40,7 +40,7 @@ namespace Glacc.FIRTest_Visual
             for (int i = 0; i < n; i++)
                 xCoord[i] = i;
 
-            filter = new FIRFilter(ref freqs);
+            FIRFilter filter = new FIRFilter(ref freqs);
 
             Graph<float, float> graphFreqs = new Graph<float, float>(16, 16, 512, 192);
             graphFreqs.horz = xCoord;
@@ -130,7 +130,32 @@ namespace Glacc.FIRTest_Visual
             signalGraph.EndDraw();
         }
 
-        class FilterTestStream : SoundStream
+        static void FreqResponseBandpass(int sampleRateHz, int minHz, int maxHz, int impulseLength, out float[] freqs)
+        {
+            int minFreqHz = minHz;
+            int maxFreqHz = maxHz;
+
+            freqs = new float[impulseLength];
+
+            int maxFreq = impulseLength / 2;
+            int maxPassFreq = maxFreq * maxFreqHz / (sampleRateHz / 2);
+            int minPassFreq = maxFreq * minFreqHz / (sampleRateHz / 2);
+
+            int i = minPassFreq;
+            while (i < maxPassFreq)
+            {
+                freqs[i] = 1.0f;
+                freqs[impulseLength - 1 - i] = 1.0f;
+
+                i++;
+            }
+        }
+
+        #endregion
+
+        #region AudioStreamAndEqualizer
+
+        class FilteredStream : SoundStream
         {
             public Mutex mutex = new Mutex();
 
@@ -146,6 +171,8 @@ namespace Glacc.FIRTest_Visual
             int samplePos = 0;
 
             public FIRFilter?[] filters = Array.Empty<FIRFilter>();
+
+            public bool updateFlag = false;
 
             short[] buffer = Array.Empty<short>();
 
@@ -183,10 +210,10 @@ namespace Glacc.FIRTest_Visual
                     return false;
                 }
 
-                mutex.WaitOne();
-
                 for (int i = 0; i < buffer.Length; i += numOfChannels)
                 {
+                    mutex.WaitOne();
+
                     for (int j = 0; j < numOfChannels; j++)
                     {
                         short currSample;
@@ -207,14 +234,16 @@ namespace Glacc.FIRTest_Visual
 
                         buffer[i + j] = currSample;
                     }
+
+                    updateFlag = true;
+
+                    mutex.ReleaseMutex();
                 }
 
                 samples = buffer;
 
                 if (samplePos >= inputSamples.Length)
                     samplePos = 0;
-
-                mutex.ReleaseMutex();
 
                 return true;
             }
@@ -262,6 +291,8 @@ namespace Glacc.FIRTest_Visual
                 if (soundBuffer == null)
                     return;
 
+                updateFlag = false;
+
                 inputSamples = soundBuffer.Samples;
 
                 sampleRate = soundBuffer.SampleRate;
@@ -280,13 +311,15 @@ namespace Glacc.FIRTest_Visual
             void Initialize()
                 => Initialize((uint)numOfChannels, sampleRate);
 
-            public FilterTestStream()
+            public FilteredStream()
             {
                 Initialize();
             }
         }
 
-        static float[] bands = [60f, 125f, 250f, 600f, 1000f, 3000f, 6000f, 12000f, 14000f, 16000f];
+        static FilteredStream audioStream = new FilteredStream();
+
+        static float[] bands = [60f, 125f, 250f, 500f, 1000f, 2000f, 4000f, 8000f, 12000f, 16000f];
         static float[] magnitudesInDb = new float[bands.Length];
         static List<Label> magnitudeLabels = new List<Label>();
 
@@ -299,10 +332,10 @@ namespace Glacc.FIRTest_Visual
         static float[] equalizerFreqs = new float[taps];
 
         static float[] equalizerCurveXCoord = new float[taps / 2];
-        static Graph<float, float> equalizerCurveGraph = new Graph<float, float>(16, 256, 512, 160);
+        static Graph<float, float> equalizerCurveGraph = new Graph<float, float>(0, 256, 512, 160);
 
         static float[] filterImpulseXCoord = new float[taps];
-        static Graph<float, float> filterImpulseGraph = new Graph<float, float>(16, 256 + 192, 512, 160);
+        static Graph<float, float> filterImpulseGraph = new Graph<float, float>(0, 256 + 192, 512, 160);
 
         static void OnEqualizerMove(object? sender, EventArgs e)
         {
@@ -341,7 +374,9 @@ namespace Glacc.FIRTest_Visual
             equalizerCurveGraph.top = 1f;
             equalizerCurveGraph.bottom = 0f;
 
+            equalizerCurveGraph.sclx = 2f;
             equalizerCurveGraph.scly = 0.1f;
+            equalizerCurveGraph.sclLen = 4f;
 
             equalizerCurveGraph.horz = equalizerCurveXCoord;
 
@@ -493,16 +528,6 @@ namespace Glacc.FIRTest_Visual
                 }
 
                 lastFilter = filter;
-
-                /*
-                FIRFilter? filter = testStream.filters[i];
-                if (filter == null)
-                    continue;
-
-                filter.UpdateFreqs(ref equalizerFreqs);
-
-                lastFilter = filter;
-                */
             }
 
             audioStream.mutex.ReleaseMutex();
@@ -515,7 +540,7 @@ namespace Glacc.FIRTest_Visual
             float[] impulse = new float[lastFilter.impulseLength];
             for (int i = 0; i < lastFilter.impulseLength; i++)
             {
-                float val = lastFilter[FIRFilter.DataType.Impulse, i];
+                float val = lastFilter.Impulse(i);
 
                 if (val > maxVal)
                     maxVal = val;
@@ -535,28 +560,9 @@ namespace Glacc.FIRTest_Visual
             filterImpulseGraph.EndDraw();
         }
 
-        static FilterTestStream audioStream = new FilterTestStream();
+        #endregion
 
-        static void FreqResponseBandpass(int sampleRateHz, int minHz, int maxHz, int impulseLength, out float[] freqs)
-        {
-            int minFreqHz = minHz;
-            int maxFreqHz = maxHz;
-
-            freqs = new float[impulseLength];
-
-            int maxFreq = impulseLength / 2;
-            int maxPassFreq = maxFreq * maxFreqHz / (sampleRateHz / 2);
-            int minPassFreq = maxFreq * minFreqHz / (sampleRateHz / 2);
-
-            int i = minPassFreq;
-            while (i < maxPassFreq)
-            {
-                freqs[i] = 1.0f;
-                freqs[impulseLength - 1 - i] = 1.0f;
-
-                i++;
-            }
-        }
+        #region FileSelector
 
         static FileSelector? fileSelector;
         static Button? openFileBtn;
@@ -630,7 +636,7 @@ namespace Glacc.FIRTest_Visual
             openedFileLabel.textAlign = TextAlign.Left;
             elements.Add(openedFileLabel);
 
-            openFileBtn = new Button("Open", appWindow.width - 80 - 8, 8, 80, 24);
+            openFileBtn = new Button("Open...", appWindow.width - 128 - 8, 8, 128, 24);
             openFileBtn.onClick += OnOpenClicked;
             elements.Add(openFileBtn);
 
@@ -641,6 +647,10 @@ namespace Glacc.FIRTest_Visual
             fileSelector.visable = false;
             elements.Add(fileSelector);
         }
+
+        #endregion
+
+        #region PlaybackControl
 
         static Label? progressText;
         static ScrollBar? progressBar;
@@ -714,6 +724,113 @@ namespace Glacc.FIRTest_Visual
                 progressBar.scrollPercent = audioStream.progress;
         }
 
+        #endregion
+
+        #region FilterSignalGraph
+
+        static bool fullView = false;
+
+        static Graph<float, float> filterInputGraph = new Graph<float, float>(512, 256, 512, 160);
+        static Graph<float, float> filterOutputGraph = new Graph<float, float>(512, 256 + 192, 512, 160);
+        static Button? btnToggleFull;
+
+        static void OnToggleFullClicked(object? sender, EventArgs e)
+        {
+            if (sender == null)
+                return;
+
+            Button? button = sender as Button;
+            if (button == null)
+                return;
+
+            fullView = !fullView;
+            button.text = fullView ? "Full" : "Half";
+        }
+
+        static void InitFilterSignalGraph()
+        {
+            filterInputGraph.left = filterOutputGraph.left = 0;
+            filterInputGraph.right = filterOutputGraph.right = taps;
+            filterInputGraph.top = filterOutputGraph.top = short.MaxValue;
+            filterInputGraph.bottom = filterOutputGraph.bottom = short.MinValue;
+
+            filterInputGraph.sclx = filterOutputGraph.sclx = 2f;
+            filterInputGraph.scly = filterOutputGraph.scly = 32768 / 10f;
+            filterInputGraph.sclLen = filterOutputGraph.sclLen = 4f;
+
+            filterInputGraph.lineColor = Color.Red;
+            filterOutputGraph.lineColor = Color.Blue;
+
+            elements.Add(filterInputGraph);
+            elements.Add(filterOutputGraph);
+
+            btnToggleFull = new Button("Half", appWindow.width - 128 - 16, 256 + 192 + 160 + 16, 128, 24);
+            btnToggleFull.onClick += OnToggleFullClicked;
+            elements.Add(btnToggleFull);
+        }
+
+        static void UpdateFilterSignalGraph()
+        {
+            if (!audioStream.updateFlag)
+                return;
+
+            audioStream.mutex.WaitOne();
+
+            audioStream.updateFlag = false;
+
+            int len = fullView ? taps : (taps / 2);
+
+            float[] filterInputSignalAvg = new float[len];
+            float[] filterOutputSignalAvg = new float[len];
+
+            for (int i = 0; i < len; i++)
+                filterInputSignalAvg[i] = filterOutputSignalAvg[i] = 0f;
+
+            int filterCount = 0;
+            for (int i = 0; i < audioStream.filters.Length; i++)
+            {
+                FIRFilter? filter = audioStream.filters[i];
+                if (filter == null)
+                    continue;
+
+                for (int j = 0; j < len; j++)
+                {
+                    filterInputSignalAvg[j] += filter.InputSignal(j);
+                    filterOutputSignalAvg[j] += filter.OutputSignal(j);
+                }
+
+                filterCount++;
+            }
+
+            audioStream.mutex.ReleaseMutex();
+
+            for (int i = 0; i < len; i++)
+            {
+                filterInputSignalAvg[i] /= filterCount;
+                filterOutputSignalAvg[i] /= filterCount;
+            }
+
+            filterInputGraph.right = filterOutputGraph.right = len - 1;
+
+            float[] filterSignalXCoord = new float[len];
+            for (int i = 0; i < len; i++)
+                filterSignalXCoord[i] = i;
+            filterInputGraph.horz = filterOutputGraph.horz = filterSignalXCoord;
+
+            filterInputGraph.BeginDraw();
+            filterOutputGraph.BeginDraw();
+
+            filterInputGraph.vert = filterInputSignalAvg;
+            filterOutputGraph.vert = filterOutputSignalAvg;
+            filterInputGraph.Plot();
+            filterOutputGraph.Plot();
+
+            filterInputGraph.EndDraw();
+            filterOutputGraph.EndDraw();
+        }
+
+        #endregion
+
         static void UserInit(object? sender, EventArgs e)
         {
             /*
@@ -736,6 +853,8 @@ namespace Glacc.FIRTest_Visual
 
             // TestFIRWithGraph(128, 0, 16, 512);
 
+            InitFilterSignalGraph();
+
             InitProgressBar();
 
             AddFileSelectorBtns();
@@ -743,6 +862,7 @@ namespace Glacc.FIRTest_Visual
 
         static void UserUpdate(object? sender, EventArgs e)
         {
+            UpdateFilterSignalGraph();
             UpdateProgressBar();
 
             Utils.UpdateElements(elements);

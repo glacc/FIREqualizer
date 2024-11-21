@@ -9,12 +9,9 @@ typedef struct
     float *impulse;
     int impulseLength;
     
-    // Queue based FIR filter.
     float *originalSignal;
     float *outputSignal;
     int signalLength;
-
-    int pos;
 }
 FIR_Filter;
 

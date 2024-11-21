@@ -16,12 +16,9 @@ namespace Glacc
             public float* impulse;
             public int impulseLength;
 
-            // Queue based FIR filter.
             public float* originalSignal;
             public float* outputSignal;
             public int signalLength;
-
-            public int pos;
         }
 
         #region C Methods
@@ -68,42 +65,34 @@ namespace Glacc
             OutputSignal
         }
 
-        int WrapToQueue(int len, int pos, int offset)
+        void CheckIndexRange(int index, int count)
         {
-            int offsetNew = pos + offset;
-            while (offsetNew >= len)
-                offsetNew -= len;
-            while (offsetNew < 0)
-                offsetNew += len;
-
-            return offsetNew;
+            if (index < 0 || index >= count)
+                throw new ArgumentOutOfRangeException();
         }
 
-        public float this[DataType i, int j]
+        public float Freqs(int index)
         {
-            get
-            {
-                int offset;
-                switch (i)
-                {
-                    case DataType.Freqs:
-                        if (j >= 0 && j < freqLength)
-                            return filter.freqs[j];
-                        break;
-                    case DataType.Impulse:
-                        if (j >= 0 && j < impulseLength)
-                            return filter.impulse[j];
-                        break;
-                    case DataType.OriginalSignal:
-                        offset = WrapToQueue(signalLength, filter.pos, j);
-                        return filter.originalSignal[offset];
-                    case DataType.OutputSignal:
-                        offset = WrapToQueue(signalLength, filter.pos, j);
-                        return filter.outputSignal[offset];
-                }
+            CheckIndexRange(index, freqLength);
+            return filter.freqs[index];
+        }
 
-                return 0.0f;
-            }
+        public float Impulse(int index)
+        {
+            CheckIndexRange(index, impulseLength);
+            return filter.impulse[index];
+        }
+
+        public float InputSignal(int index)
+        {
+            CheckIndexRange(index, signalLength);
+            return filter.originalSignal[index];
+        }
+
+        public float OutputSignal(int index)
+        {
+            CheckIndexRange(index, signalLength);
+            return filter.outputSignal[index];
         }
 
         public static void CreateImpulse(ref float[] freqs, out float[] impulse)

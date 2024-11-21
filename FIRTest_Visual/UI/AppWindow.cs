@@ -120,8 +120,6 @@ namespace Glacc.UI
                 Event.Update(renderWindow, drawAndResetState, true);
                 drawAndResetState = false;
 
-                renderWindow.Clear();
-
                 stopwatch.Stop();
                 double elaspedMs = stopwatch.Elapsed.TotalMilliseconds;
                 stopwatch.Restart();
@@ -132,7 +130,6 @@ namespace Glacc.UI
                 {
                     bool firstUpdate = (updateCount == 0);
 
-                    Event.ResetPossiblyRepeatedState();
                     Event.UpdateState();
 
                     if (firstUpdate)
@@ -151,6 +148,8 @@ namespace Glacc.UI
                         renderTexture.Display();
                     }
 
+                    Event.ResetPossiblyRepeatedState();
+
                     updateCount++;
                     if (updateCount >= maxUpdateEachDraw)
                     {
@@ -159,18 +158,6 @@ namespace Glacc.UI
                     }
                 }
 
-                /*
-                if (drawAndResetState)
-                {
-                    renderWindow.Clear(Settings.bgColor);
-
-                    userDraw?.Invoke(this, EventArgs.Empty);
-
-                    renderWindow.Display();
-                }
-                */
-
-                // userDraw?.Invoke(this, EventArgs.Empty);
                 renderWindow.Draw(spriteOfRenderTexture);
 
                 renderWindow.Display();
