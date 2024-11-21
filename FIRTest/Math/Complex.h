@@ -14,6 +14,7 @@ Complex Complex_Divide(Complex a, Complex b);
 
 float Complex_Abs(Complex a);
 float Complex_Angle(Complex a);
+Complex Complex_Conjugate(Complex a);
 
 Complex Complex_Exp(float angle);
 Complex Complex_Pow(Complex a, float b);

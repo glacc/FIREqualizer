@@ -48,6 +48,15 @@ float Complex_Angle(Complex a)
     return atan2f(a.real, a.imag);
 }
 
+Complex Complex_Conjugate(Complex a)
+{
+    Complex result = {
+        .real = a.real,
+        .imag = -a.imag
+    };
+    return result;
+}
+
 Complex Complex_Exp(float angle)
 {
     Complex result =

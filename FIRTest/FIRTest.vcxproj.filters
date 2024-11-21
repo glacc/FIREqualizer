@@ -30,6 +30,9 @@
     <ClCompile Include="FIR_DllExport.c">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="FFT.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Math\Complex.h">
@@ -45,6 +48,9 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="FIR_DllExport.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="FFT.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

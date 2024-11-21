@@ -130,6 +130,7 @@
   <ItemGroup>
     <ClCompile Include="Collections\Vector.c" />
     <ClCompile Include="DFT.c" />
+    <ClCompile Include="FFT.c" />
     <ClCompile Include="FIR.c" />
     <ClCompile Include="FIR_DllExport.c" />
     <ClCompile Include="Math\Complex.c" />
@@ -137,6 +138,7 @@
   <ItemGroup>
     <ClInclude Include="Collections\Vector.h" />
     <ClInclude Include="DFT.h" />
+    <ClInclude Include="FFT.h" />
     <ClInclude Include="FIR.h" />
     <ClInclude Include="FIR_DllExport.h" />
     <ClInclude Include="Math\Complex.h" />

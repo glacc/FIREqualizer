@@ -3,6 +3,7 @@
 #include "Collections/Vector.h"
 #include "Math/Complex.h"
 #include "DFT.h"
+#include "FFT.h"
 
 #define _USE_MATH_DEFINES
 #include <malloc.h>
@@ -32,7 +33,8 @@ void FIR_CreateImpulse(float *freqs, float *impulse, int count)
 
     Vector_ClearAndFill(&impulseComplex, &(Complex[]){ Complex_Zero() }, count);
 
-    IDFT(freqsComplex.array, impulseComplex.array, count);
+    // IDFT(freqsComplex.array, impulseComplex.array, count);
+    IFFT(freqsComplex.array, impulseComplex.array, count);
 
     int i;
     int j = 0;

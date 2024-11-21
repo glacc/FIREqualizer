@@ -327,7 +327,7 @@ namespace Glacc.FIRTest_Visual
         const float maxDb = 0f;
         const float defaultPercent = 1f;
 
-        const int taps = 256;
+        const int taps = 2048;
         static float[] equalizerCurve = new float[taps / 2];
         static float[] equalizerFreqs = new float[taps];
 
@@ -358,7 +358,7 @@ namespace Glacc.FIRTest_Visual
             RedrawFreqGraph();
         }
 
-        static void OnEqualizerAdjEnds(object? sender, EventArgs e)
+        static void OnEqualizerAdjustEnds(object? sender, EventArgs e)
         {
             ApplyEqualizerCurve();
         }
@@ -423,9 +423,10 @@ namespace Glacc.FIRTest_Visual
                 ScrollBar scrollBarEqualizerBand = new ScrollBar(px, py, scrollBarWidth, scrollBarLength);
                 scrollBarEqualizerBand.customData = $"{i}";
                 scrollBarEqualizerBand.onMove += OnEqualizerMove;
-                scrollBarEqualizerBand.onScrollEnds += OnEqualizerAdjEnds;
+                scrollBarEqualizerBand.onScrollEnds += OnEqualizerAdjustEnds;
                 scrollBarEqualizerBand.scrollerSizePixels = scrollBarWidth;
                 scrollBarEqualizerBand.scrollPercent = 1f - defaultPercent;
+                scrollBarEqualizerBand.scrollBgSpeedMultiplier = 20f;
 
                 // Label
                 int labelx = px + (scrollBarWidth / 2);

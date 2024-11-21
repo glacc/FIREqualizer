@@ -108,9 +108,9 @@ namespace Glacc.UI.Elements
             return drawables;
         }
 
-        public Button(string label, int px, int py, int width, int height)
+        public Button(string text, int px, int py, int width, int height)
         {
-            this.text = label;
+            this.text = text;
             this.px = px;
             this.py = py;
             this.width = width;
@@ -119,7 +119,7 @@ namespace Glacc.UI.Elements
             bgRect = new RectangleShape();
             txt = new Text();
 
-            drawables = new Drawable[2] { bgRect, txt };
+            drawables = [bgRect, txt];
 
             if (Settings.font != null)
                 font = Settings.font;
