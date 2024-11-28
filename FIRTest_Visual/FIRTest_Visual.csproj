@@ -7,6 +7,7 @@
     <Nullable>enable</Nullable>
     <RootNamespace>Glacc</RootNamespace>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <RunPostBuildEvent>Always</RunPostBuildEvent>
   </PropertyGroup>
 
   <ItemGroup>
@@ -28,7 +29,7 @@
   </ItemGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="copy /Y &quot;$(SolutionDir)\x64\Debug\FIR.dll&quot; &quot;$(TargetDir)\FIR.dll&quot;" />
+    <Exec Command="copy /Y &quot;$(SolutionDir)x64\$(Configuration)\FIR.dll&quot; &quot;$(TargetDir)FIR.dll&quot;" />
   </Target>
 
 </Project>

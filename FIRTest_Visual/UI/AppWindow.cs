@@ -148,7 +148,8 @@ namespace Glacc.UI
                         renderTexture.Display();
                     }
 
-                    Event.ResetPossiblyRepeatedState();
+                    // Event.ResetPossiblyRepeatedState();
+                    Event.ResetState();
 
                     updateCount++;
                     if (updateCount >= maxUpdateEachDraw)

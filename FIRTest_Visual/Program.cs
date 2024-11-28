@@ -394,9 +394,12 @@ namespace Glacc.FIRTest_Visual
 
         static int taps = 256;
         const int minTaps = 8;
-        const int maxTaps = 16384;
+        const int maxTaps = 32768;
         static float[] equalizerCurve = Array.Empty<float>();
         static float[] equalizerFreqs = Array.Empty<float>();
+
+        static bool normalize = false;
+        static float normalizeMultiplier = 1f;
 
         static float[] equalizerCurveXCoord = Array.Empty<float>();
         static Graph<float, float> equalizerCurveGraph = new Graph<float, float>(0, 256, 512, 160);
@@ -408,24 +411,18 @@ namespace Glacc.FIRTest_Visual
 
         static void OnThreadToggleClicked(object? sender, EventArgs e)
         {
-            if (sender == null)
-                return;
-
-            audioStream.multithreaded = !audioStream.multithreaded;
-
             Button? button = sender as Button;
             if (button == null)
                 return;
+
+            audioStream.multithreaded = !audioStream.multithreaded;
 
             button.text = audioStream.multithreaded ? "Multithreaded" : "Singlethread";
         }
 
         static void OnEqualizerMove(object? sender, EventArgs e)
         {
-            if (sender == null)
-                return;
-
-            ScrollBar? scrollBar = sender as ScrollBar;
+            ScrollBar? scrollBar = (sender as ScrollBar) ?? null;
             if (scrollBar == null)
                 return;
 
@@ -442,15 +439,10 @@ namespace Glacc.FIRTest_Visual
         }
 
         static void OnEqualizerAdjustEnds(object? sender, EventArgs e)
-        {
-            ApplyEqualizerCurve();
-        }
+            => ApplyEqualizerCurve();
 
         static void OnNewTapsLostFocus(object? sender, EventArgs e)
         {
-            if (sender == null)
-                return;
-
             InputBox? inputBox = sender as InputBox;
             if (inputBox == null)
                 return;
@@ -460,9 +452,6 @@ namespace Glacc.FIRTest_Visual
 
         static void OnNewTapsEntered(object? sender, EventArgs e)
         {
-            if (sender == null)
-                return;
-
             InputBox? inputBox = sender as InputBox;
             if (inputBox == null)
                 return;
@@ -485,6 +474,8 @@ namespace Glacc.FIRTest_Visual
             InitOrUpdateTaps();
 
             RecalcEqualizerCurve();
+
+            RedrawFreqGraph();
 
             ApplyEqualizerCurve();
         }
@@ -700,6 +691,8 @@ namespace Glacc.FIRTest_Visual
                 impulse[i] = val;
             }
 
+            normalizeMultiplier = 1f / (maxVal - minVal);
+
             filterImpulseGraph.top = maxVal;
             filterImpulseGraph.bottom = minVal;
             filterImpulseGraph.BeginDraw();
@@ -725,9 +718,6 @@ namespace Glacc.FIRTest_Visual
 
             fileSelector.visable = true;
 
-            if (sender == null)
-                return;
-
             Button? btn = sender as Button;
             if (btn == null)
                 return;
@@ -737,9 +727,6 @@ namespace Glacc.FIRTest_Visual
 
         static void OnFileSelectorCancel(object? sender, EventArgs e)
         {
-            if (sender == null)
-                return;
-
             FileSelector? fileSelector = sender as FileSelector;
             if (fileSelector == null)
                 return;
@@ -754,9 +741,6 @@ namespace Glacc.FIRTest_Visual
 
         static void OnFileSelectorSelect(object? sender, EventArgs e)
         {
-            if (sender == null)
-                return;
-
             FileSelector? fileSelector = sender as FileSelector;
             if (fileSelector == null)
                 return;
@@ -883,18 +867,26 @@ namespace Glacc.FIRTest_Visual
         static Graph<float, float> filterInputGraph = new Graph<float, float>(512, 256, 512, 160);
         static Graph<float, float> filterOutputGraph = new Graph<float, float>(512, 256 + 192, 512, 160);
         static Button? btnToggleFull;
+        static Button? btnToggleNormalize;
 
         static void OnToggleFullClicked(object? sender, EventArgs e)
         {
-            if (sender == null)
-                return;
-
             Button? button = sender as Button;
             if (button == null)
                 return;
 
             fullView = !fullView;
             button.text = fullView ? "Full" : "Half";
+        }
+
+        static void OnToggleNormalizeClicked(object? sender, EventArgs e)
+        {
+            Button? button = sender as Button;
+            if (button == null)
+                return;
+
+            normalize = !normalize;
+            button.text = normalize ? "Normalize On" : "Normalize Off";
         }
 
         static void InitFilterSignalGraph()
@@ -917,6 +909,10 @@ namespace Glacc.FIRTest_Visual
             btnToggleFull = new Button("Half", appWindow.width - 128 - 16, 256 + 192 + 160 + 16, 128, 24);
             btnToggleFull.onClick += OnToggleFullClicked;
             elements.Add(btnToggleFull);
+
+            btnToggleNormalize = new Button("Normalize Off", appWindow.width - 128 - 16 - 128 - 16, 256 + 192 + 160 + 16, 128, 24);
+            btnToggleNormalize.onClick += OnToggleNormalizeClicked;
+            elements.Add(btnToggleNormalize);
         }
 
         static void UpdateFilterSignalGraph()
@@ -954,10 +950,11 @@ namespace Glacc.FIRTest_Visual
 
             audioStream.mutex.ReleaseMutex();
 
+            float multiplier = normalize ? normalizeMultiplier : 1f;
             for (int i = 0; i < len; i++)
             {
                 filterInputSignalAvg[i] /= filterCount;
-                filterOutputSignalAvg[i] /= filterCount;
+                filterOutputSignalAvg[i] /= filterCount / multiplier;
             }
 
             filterInputGraph.right = filterOutputGraph.right = len - 1;
